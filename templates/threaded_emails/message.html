@@ -1,0 +1,28 @@
+{%extends 'base.html'%}
+{%load staticfiles%}
+
+{%block extra_head%}
+{{email_form.media}}
+<link href="{%static 'threaded_emails/css/threaded_emails.css'%}" rel="stylesheet">
+<script src='{%static 'threaded_emails/js/threaded_emails.js'%}'></script>
+{%endblock%}
+
+{%block content%}
+
+<h1>{{msg.subject}}</h1>
+<table class='table email_table'>{%include 'threaded_emails/includes/message.html'%}
+</table>
+
+<h2>Reply</h2>
+<div class='reply_form'>
+    <form method='post' role="form" class="form-horizontal">
+        {%csrf_token%}
+        {{email_form.as_bootstrap}}
+        <div class='form-group'>
+        <button class="btn btn-default" ><span class="glyphicon glyphicon-share-alt"></span> Send</button>
+        </div>
+    </form>
+</div>
+
+
+{%endblock%}

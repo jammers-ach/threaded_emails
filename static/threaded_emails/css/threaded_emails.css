@@ -1,0 +1,24 @@
+.email_msg .header h2, .email_msg .header{
+    display:inline-block;
+}
+
+.email_msg .body{
+    display:inline-block;
+}
+
+tr.full td{
+    border-top:None !important;
+
+}
+
+.email_table tr{
+    cursor:pointer;
+}
+
+.email_table tr:hover{
+    background-color:#d9d9d9;
+}
+
+.full iframe{
+    width:100%;
+}

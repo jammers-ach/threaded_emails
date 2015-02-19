@@ -1,0 +1,13 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<a class='btn btn-default' href='{%url 'emails:check_mail' box.id%}'>check mail</a>
+
+<h1>{{box}}</h1>
+
+<table class="table table-striped">
+{%for email in box.root_emails%}
+{%include 'threaded_emails/includes/inbox_line.html'  %}
+{%endfor%}
+</table>
+{%endblock%}

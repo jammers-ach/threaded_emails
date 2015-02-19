@@ -1,0 +1,13 @@
+<tr>
+    <td>
+        <a href='{%url 'emails:view_thread' email.id%}'>{{email.from_addr}} {{email.thread_size}}</a>
+    </td>
+    <td>
+        {{email.subject}}
+    </td>
+
+    <td>
+        {{email.time_sent}}
+    </td>
+
+</tr>

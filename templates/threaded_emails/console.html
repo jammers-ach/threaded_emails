@@ -1,0 +1,11 @@
+{%extends 'base.html'%}
+
+{%block content%}
+
+<ul>
+    {%for box in boxes%}
+    <li><a href='{%url 'emails:mailbox' box.id%}'>{{box}}</li>
+    {%endfor%}
+
+</ul>
+{%endblock%}
