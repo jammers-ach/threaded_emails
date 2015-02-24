@@ -2,6 +2,9 @@ import imaplib
 import email
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.mime.application import MIMEApplication
+from os.path import basename
+
 
 class ImapConnection(object):
     '''Connects to an IMAP server
@@ -56,7 +59,7 @@ class ImapConnection(object):
 
 
 
-def make_msg(subject,body,toaddr,fromaddr,reply_to=None):
+def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
@@ -65,4 +68,22 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None):
         msg['In-Reply-To'] = reply_to
 
     msg.attach(MIMEText(body, 'plain'))
+
+
+    for f in files or []:
+        if(isinstance(f, str)):
+            fil = open(f, "rb")
+            fname = basename(f)
+        else:
+            fil = f[0]
+            fname = f[1]
+        print 'attaching %s' % fname
+        attachment = MIMEApplication(fil.read())
+        attachment.add_header("Content-Disposition", "attachment", filename=fname)
+        msg.attach(attachment)
+        #msg.attach(MIMEApplication(
+            #fil.read(),
+            #Content_Disposition='attachment; filename="%s"' % basename(f)
+        #))
+
     return msg

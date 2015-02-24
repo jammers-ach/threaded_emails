@@ -19,6 +19,7 @@ class MailBox(ModelWithLog):
     last_check_date = models.DateTimeField(blank=True,null=True)
 
     smtp_address = models.CharField(max_length=100)
+    smtp_port = models.IntegerField(default=465)
     from_addr = models.CharField(max_length=100)
 
     #To add:
@@ -58,12 +59,15 @@ class MailBox(ModelWithLog):
     def send_mail(self,msg,to):
         '''sends a MIMEText message (msg)'''
         print 'Creating STMP'
-        s = smtplib.SMTP(self.smtp_address)
+        s = smtplib.SMTP(self.smtp_address,self.smtp_port)
+        print 'ehlo'
         s.ehlo()
+        print 'start ttls'
         s.starttls()
         msg['Message-Id'] = email.utils.make_msgid('mbox-%d' % self.pk)
         print 'Message id:',msg['Message-Id']
         s.login(self.account,self.password)
+        s.ehlo()
         msg['from'] = self.from_addr
 
         s.sendmail(self.from_addr, to, msg.as_string())
