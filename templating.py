@@ -31,7 +31,7 @@ def replace(source_text,ob,table):
     return source_text
 
 
-def replace_all(text,objs):
+def fill_in_template(text,objs):
     '''replaces all the things in the soruce text with every object'''
 
     for obj in objs:
