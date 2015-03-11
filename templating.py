@@ -1,6 +1,5 @@
 def replace(source_text,ob,table):
     '''Goes through the fields in a replacement table and subtitutes them into the source text'''
-    print table
     for code,var,desc in table:
         #print code,var,desc
         val = getattr(ob,var)
