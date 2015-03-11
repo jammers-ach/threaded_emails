@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from .models import MailBox, EmailMessage,EmailTemplate
 from .forms import EmailForm
 from .quick_imap import make_msg
-from .templating import fill_in_template
+from .templating import populate_email
 
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
@@ -85,9 +85,10 @@ class FillInTemplateView(View):
 
     def get(self,request):
         template = EmailTemplate.objects.get(id=request.GET['t'])
-        objs = [ (o.objects.get(request.GET[k])) for o,k in self.object_list.iteritems() ]
+        objs = [ (o.objects.get(id=request.GET[k])) for k,o in self.object_list.iteritems() ]
+        print objs
 
-        subject,body = fill_in_template(template.default_subject,objs),fill_in_template(template.text,objs)
+        subject,body = populate_email(template,objs)
 
         return JsonResponse({'s':subject,'b':body})
 
