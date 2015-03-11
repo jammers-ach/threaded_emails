@@ -84,10 +84,8 @@ class FillInTemplateView(View):
     object_list = {}
 
     def get(self,request):
-        subject = request.GET['s']
-        body = request.GET['b']
         template = EmailTemplate.objects.get(id=request.GET['t'])
-        objs = [ (o.objects.get(request.GET[k])) for o,k in self.object_list.itteritems() ]
+        objs = [ (o.objects.get(request.GET[k])) for o,k in self.object_list.iteritems() ]
 
         subject,body = fill_in_template(template.default_subject,objs),fill_in_template(template.text,objs)
 
