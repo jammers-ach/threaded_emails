@@ -23,8 +23,6 @@ def fill_in_template(text,objs):
 
 def populate_email(template,objs):
     '''Takes an email template, returns a subject/object mix with the fields filed in'''
-
-
     subject,body = fill_in_template(template.default_subject,objs),fill_in_template(template.text,objs)
     return [subject,body]
 

@@ -6,6 +6,8 @@ from .models import MailBox, EmailMessage,EmailTemplate
 from .forms import EmailForm
 from .quick_imap import make_msg
 from .templating import populate_email
+from django.contrib import messages
+from django.http import Http404
 
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
@@ -60,6 +62,23 @@ def view_thread(request,msg_id):
     email = EmailForm(initial={'to':from_addr})
 
     return render(request,'threaded_emails/message.html',{'msg':msg,'email_form':email,'last_msg':last_msg})
+
+
+def send_template(request):
+    '''Sends an email from the template form'''
+
+    if(request.method == 'POST'):
+        mbox = MailBox.objects.all()[0] #TODO make pick the mailbox more nicely
+        subject = request.POST.get('subject')
+        body = request.POST.get('body')
+        to = request.POST.get('to')
+
+        msg = make_msg(subject,body,to,mbox.from_addr)
+        mbox.send_mail(msg,to)
+        messages.success(request,'Email sent' )
+        return redirect(request.POST.get('redirect'))
+    else:
+        raise Http404('method not post')
 
 
 def full_email(request,msg_id):

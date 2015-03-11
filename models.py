@@ -205,3 +205,8 @@ class EmailTemplate(ModelWithLog):
 
     def __unicode__(self):
         return self.template_name
+
+
+
+
+
