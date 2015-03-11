@@ -187,3 +187,21 @@ class EmailMessage(ModelWithLog):
 
         return e
 
+
+class EmailTemplateCategory(ModelWithLog):
+    '''A helpful way of organising email templates'''
+    category_name = models.CharField(max_length=300)
+
+
+    def __unicode__(self):
+        return self.category_name
+
+class EmailTemplate(ModelWithLog):
+    '''An email with placeholders that are replaced later'''
+    template_name = models.CharField(max_length=300)
+    template_category = models.ForeignKey('EmailTemplateCategory')
+    default_subject=  models.CharField(max_length=300)
+    text = models.TextField()
+
+    def __unicode__(self):
+        return self.template_name
