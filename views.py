@@ -83,7 +83,7 @@ def send_template(request):
 
 def full_email(request,msg_id):
     msg = EmailMessage.objects.get(id=msg_id)
-    return HttpResponse(msg.body)
+    return render(request,'threaded_emails/includes/msg_body.html',{'msg':msg})
 
 
 def view_flat(request,msg_id):

@@ -8,30 +8,11 @@
     {%if msg == last_msg%}
     <tr class='full'>
         <td colspan="3">
-            <iframe  src='{%url 'emails:full_email' msg.id%}' frameborder="0" allowtransparency="true" scrolling="no" >Upgrade your browser</iframe>
+                <div class='email_body'>{%include 'threaded_emails/includes/msg_body.html'%} </div>
         </td>
     </tr>
 
     {%endif%}
-
-
-{%comment%}
-<div class='email_msg'>
-    <div class='header'>
-        <h2>{{msg.from_addr}} </h2>
-    </div>
-    <div class='body'>
-        {# Load the message in some way#}
-            </div>
-    <div class='time'>
-            </div>
-    {%if msg == last_msg%}
-    <div class='body'>
-        {{msg.body}}
-    </div>
-    {%endif%}
-</div>
-{%endcomment%}
 
 {%for msg in msg.children%}
     {%include 'threaded_emails/includes/message.html'%}
