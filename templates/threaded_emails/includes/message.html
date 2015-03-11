@@ -1,6 +1,7 @@
 <tr {%if msg == last_msg%}class='with-email'{%endif%} data-id='{{msg.id}}'>
     <td>{{msg.from_addr}}</td>
     <td >
+        {%if msg.hasattachments%}  <span class="glyphicon glyphicon-paperclip"></span>   {%endif%}
         <div class='msg_short'>{%if msg != last_msg%}{{msg.body|striptags|truncatewords:10}}{%endif%}</div>
     </td>
     <td>{{msg.time_sent}} ({{msg.time_sent|timesince}} ago)</td>
