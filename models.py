@@ -7,6 +7,12 @@ import smtplib
 #http://www.jwz.org/doc/threading.html
 import email
 import time
+import re
+
+def strip_email(s):
+    s = re.sub(r'.*<','',s)
+    s = re.sub(r'>.*','',s)
+    return s
 
 class MailBox(ModelWithLog):
     mailbox_choices = ((1,'IMAP'),(2,'POP'))
@@ -21,6 +27,9 @@ class MailBox(ModelWithLog):
     smtp_address = models.CharField(max_length=100)
     smtp_port = models.IntegerField(default=465)
     from_addr = models.CharField(max_length=100)
+
+
+    clear_on_read = models.BooleanField(default=False)
 
     #To add:
     #check_type - what do we read only, or read and clear the read flag
@@ -38,7 +47,7 @@ class MailBox(ModelWithLog):
         '''Checks the mailbox for new messages'''
         self.conn = ImapConnection(self.server,self.account,self.password)
         self.conn.login()
-        emails = self.conn.get_unread_emails()
+        emails = self.conn.get_unread_emails(clear_read=self.clear_on_read)
 
         if(len(emails) > 0):
             #RUROH NEW MAILS
@@ -74,7 +83,10 @@ class MailBox(ModelWithLog):
         s.quit()
 
 
-        EmailMessage.from_email(msg,self)
+        e = EmailMessage.from_email(msg,self)
+        from checker import new_email
+        new_email.send(sender=e.__class__,email=e)
+
 
     def root_emails(self):
         q = EmailMessage.objects.filter(mailbox=self).filter(reply_to__isnull=True).order_by('-time_sent')
@@ -97,6 +109,13 @@ class EmailMessage(ModelWithLog):
     time_recived = models.DateTimeField()
     time_sent = models.DateTimeField()
     read = models.BooleanField(default=False)
+
+
+    def stripped_to(self):
+        return strip_email(self.to_addr)
+
+    def stripped_from(self):
+        return strip_email(self.from_addr)
 
     def children(self):
         return EmailMessage.objects.filter(parent=self)

@@ -15,8 +15,8 @@ def check_box(mb):
     for email in emails:
         e = EmailMessage.from_email(email,mb)
         #Todo, check if message exists before sending signal..
-        new_email.send(sender=e.__class__,email=e)
         if(e != None):
+            new_email.send(sender=e.__class__,email=e)
             e.log_creation(None,'created through email check')
 
 

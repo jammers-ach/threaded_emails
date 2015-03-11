@@ -86,6 +86,26 @@ def full_email(request,msg_id):
     return HttpResponse(msg.body)
 
 
+def view_flat(request,msg_id):
+    msg = EmailMessage.objects.get(id=msg_id)
+    email = EmailForm(initial={'to':msg.from_addr,'email_subject':'Re: ' + msg.subject})
+
+    if(request.method=='POST'):
+        email2 = EmailForm(request.POST)
+        if(email2.is_valid()):
+            to = email2.cleaned_data['to']
+            body = email2.cleaned_data['email_text']
+            subject = email2.cleaned_data['email_subject']
+            mime_msg = make_msg(subject,body,to,None,msg.message_id)
+            #add reply to flag
+            msg.mailbox.send_mail(mime_msg,to)
+        else:
+            pass
+
+    return render(request,'threaded_emails/flat_email.html',{'msg':msg,'email_form':email})
+
+
+
 
 class FillInTemplateView(View):
     '''Each page that wants to apply a template to an object(s) wants to do it over ajax

@@ -45,9 +45,13 @@ class ImapConnection(object):
     def _search(self,where,what):
         return self.imap_server.search(where,what)
 
-    def get_unread_emails(self):
+    def get_unread_emails(self,clear_read=False):
         self.imap_server.select(readonly=1) # Select inbox or default namespace
         retcode,messages = self.imap_server.search(None, '(UNSEEN)')
+
+        if(clear_read and len(messages[0]) > 0):
+            self.imap_server.store(messages[0].replace(' ',','),'+FLAGS','\Seen')
+
         return messages[0].split()
 
     def get_all_emails(self):
