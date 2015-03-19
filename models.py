@@ -74,7 +74,8 @@ class MailBox(ModelWithLog):
         s.quit()
 
 
-        EmailMessage.from_email(msg,self)
+        e = EmailMessage.from_email(msg,self)
+        return e
 
     def root_emails(self):
         q = EmailMessage.objects.filter(mailbox=self).filter(reply_to__isnull=True).order_by('-time_sent')
