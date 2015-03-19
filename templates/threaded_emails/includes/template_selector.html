@@ -1,0 +1,13 @@
+<select id='template_selector' class="form-control">
+    <option value='0'>--</option>
+    {%for cat in email_template_categories%}
+    <optgroup label="{{cat.category_name}}">
+        {%for template in cat.emailtemplate_set.all%} 
+            <option value="{{template.id}}">{{template.template_name}}</option>
+        {%endfor%}
+    </optgroup>
+
+    {%endfor%}
+
+</select>
+

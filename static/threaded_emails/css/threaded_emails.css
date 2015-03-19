@@ -22,3 +22,7 @@ tr.full td{
 .full iframe{
     width:100%;
 }
+
+.email_body{
+    padding: 10px 0px 10px 50px;
+}

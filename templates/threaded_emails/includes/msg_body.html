@@ -1,0 +1,19 @@
+{%if msg.body_html%}
+    {{msg.body_html|safe}}
+{%else%}
+<pre>
+    {{msg.body}}
+
+</pre>
+{%endif%}
+
+{%if msg.attachment_set.exists%}
+<div class='attachments'>
+    Attachments:
+    <ul>
+    {%for attachment in msg.attachment_set.all%}
+    <li><a href='{{attachment.url}}'>{{attachment}}</a></li>
+    {%endfor%}
+    </ul>
+    </div>
+{%endif%}

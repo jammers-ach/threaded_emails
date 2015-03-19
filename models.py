@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 from django.db import models
 from modelwithlog.models import ModelWithLog
 # Create your models here.
@@ -7,6 +9,13 @@ import smtplib
 #http://www.jwz.org/doc/threading.html
 import email
 import time
+import re
+
+def strip_email(s):
+    s = re.sub(r'.*<','',s)
+    s = re.sub(r'>.*','',s)
+    return s
+
 
 class MailBox(ModelWithLog):
     mailbox_choices = ((1,'IMAP'),(2,'POP'))
@@ -21,6 +30,9 @@ class MailBox(ModelWithLog):
     smtp_address = models.CharField(max_length=100)
     smtp_port = models.IntegerField(default=465)
     from_addr = models.CharField(max_length=100)
+
+
+    clear_on_read = models.BooleanField(default=False)
 
     #To add:
     #check_type - what do we read only, or read and clear the read flag
@@ -38,7 +50,7 @@ class MailBox(ModelWithLog):
         '''Checks the mailbox for new messages'''
         self.conn = ImapConnection(self.server,self.account,self.password)
         self.conn.login()
-        emails = self.conn.get_unread_emails()
+        emails = self.conn.get_unread_emails(clear_read=self.clear_on_read)
 
         if(len(emails) > 0):
             #RUROH NEW MAILS
@@ -75,7 +87,9 @@ class MailBox(ModelWithLog):
 
 
         e = EmailMessage.from_email(msg,self)
-        return e
+        from checker import new_email
+        new_email.send(sender=e.__class__,email=e)
+
 
     def root_emails(self):
         q = EmailMessage.objects.filter(mailbox=self).filter(reply_to__isnull=True).order_by('-time_sent')
@@ -88,6 +102,7 @@ class EmailMessage(ModelWithLog):
     mailbox = models.ForeignKey(MailBox)
     subject = models.TextField()
     body = models.TextField(blank=True,null=True)
+    body_html = models.TextField(blank=True,null=True)
 
     message_id = models.CharField(max_length =200,unique=True) #200, whatever or 5 who knows?
 
@@ -98,6 +113,13 @@ class EmailMessage(ModelWithLog):
     time_recived = models.DateTimeField()
     time_sent = models.DateTimeField()
     read = models.BooleanField(default=False)
+
+
+    def stripped_to(self):
+        return strip_email(self.to_addr)
+
+    def stripped_from(self):
+        return strip_email(self.from_addr)
 
     def children(self):
         return EmailMessage.objects.filter(parent=self)
@@ -118,6 +140,8 @@ class EmailMessage(ModelWithLog):
         ''' finds the deepest child in the thread'''
         return self.children_date()
 
+    def hasattachments(self):
+        return self.attachment_set.exists()
 
 
     def log_child(self):
@@ -169,15 +193,9 @@ class EmailMessage(ModelWithLog):
                 parent.log_child()
 
 
-        p = ''
-        if eml.is_multipart():
-            for payload in eml.get_payload():
-                p += payload.get_payload()
-        else:
-            print type(eml.get_payload())
-            p += eml.get_payload()
-        e.body = p
 
+        e.save()
+        e.parse_body(eml) #need to save before we parse body because ATTACHMENTS
         e.save()
 
         #lets see if there are any emails that we should be the parents of?
@@ -187,4 +205,106 @@ class EmailMessage(ModelWithLog):
             e.num_children = q.count()
 
         return e
+
+
+    def parse_body(self,eml):
+        ''' Parses an email body and sotres the body and html into the two parts'''
+        self.body = ''
+        self.body_html = ''
+        if eml.is_multipart():
+            for payload in eml.get_payload():
+                self.handle_payload(payload)
+        else:
+            payload = eml.get_payload()
+            self.handle_payload(payload)
+
+    def handle_payload(self,payload):
+        ''' Figures out which part of an email this should go'''
+        #If we're text attach us to the messages
+        if(payload.get_content_maintype() == 'text'):
+            if(payload.get_content_subtype() == 'plain'):
+                self.body += payload.get_payload(decode=True)
+            elif(payload.get_content_subtype() == 'html'):
+                #self.body_html += decodeHtmlEmail(payload.get_payload())
+                self.body_html += payload.get_payload(decode=True)
+            else:
+                Attachment.from_payload(payload,self).save()
+
+        #If it's a multipart, recurse
+        elif(payload.get_content_maintype() == 'multipart'):
+            for payload in payload.get_payload():
+                self.handle_payload(payload)
+        #otherwise it's a file
+        else:
+            if(payload.get_filename(None) != None):
+                #Save the file as an attachment
+                Attachment.from_payload(payload,self).save()
+            else:
+                print 'Unrecognised payload',payload.get_content_type()
+
+class EmailTemplateCategory(ModelWithLog):
+    '''A helpful way of organising email templates'''
+    category_name = models.CharField(max_length=300)
+
+
+    def __unicode__(self):
+        return self.category_name
+
+class EmailTemplate(ModelWithLog):
+    '''An email with placeholders that are replaced later'''
+    template_name = models.CharField(max_length=300)
+    template_category = models.ForeignKey('EmailTemplateCategory')
+    default_subject=  models.CharField(max_length=300)
+    text = models.TextField()
+
+    def __unicode__(self):
+        return self.template_name
+
+
+
+
+media_root = getattr(settings, "MEDIA_ROOT", "media")
+media_url = getattr(settings, "MEDIA_URL", "media")
+
+class Attachment(ModelWithLog):
+    email = models.ForeignKey('EmailMessage')
+    filepath = models.CharField(max_length=200)
+    filename = models.CharField(max_length=200)
+    url = models.CharField(max_length=200)
+
+    default_path = os.path.join(media_root,'uploads','emails')
+    default_url = os.path.join(media_url,'uploads','emails')
+
+    def __unicode__(self):
+        return self.filename
+
+
+    @classmethod
+    def from_payload(klass,payload,email):
+        '''creates a new attachment from an email payload '''
+        #Create clsas, set our filename
+        a = klass()
+        a.email = email
+
+        name = payload.get_filename()
+        a.filename = name
+
+
+        test_dir = os.path.join(klass.default_path)
+        if not os.path.exists(test_dir):
+            os.makedirs(test_dir)
+
+        filepath = os.path.join(test_dir,name)
+        print filepath
+
+
+        #Figure out the filepath to store this attachment
+        f = open(filepath, 'wb')
+        f.write(payload.get_payload(decode=True))
+        f.close()
+
+        a.url  = os.path.join(klass.default_url,name)
+
+
+        return a
 

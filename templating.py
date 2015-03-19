@@ -1,23 +1,3 @@
-
-order_codewords = ('Order',[
-    ('%o','order_id','The Order id'),
-
-    ])
-
-client_codewords = ('Client',[
-
-    ('%f','first_name','The Client\'s first name'),
-    ('%l','last_name','The Client\'s last name'),
-])
-
-
-
-login_codewords = ('User',[
-    ('%m','first_name','Your first name')
-])
-
-all_codewords = dict([order_codewords,client_codewords,login_codewords])
-
 def replace(source_text,ob,table):
     '''Goes through the fields in a replacement table and subtitutes them into the source text'''
     for code,var,desc in table:
@@ -31,21 +11,18 @@ def replace(source_text,ob,table):
     return source_text
 
 
-def replace_all(text,objs):
+def fill_in_template(text,objs):
     '''replaces all the things in the soruce text with every object'''
 
     for obj in objs:
-        if(obj != None):
-            if(obj.__class__.__name__ in all_codewords):
-                table = all_codewords[obj.__class__.__name__]
+        if(hasattr(obj,'template_codes')):
+                table = obj.template_codes
                 text = replace(text,obj,table)
 
     return text
 
 def populate_email(template,objs):
     '''Takes an email template, returns a subject/object mix with the fields filed in'''
-
-
-    subject,body = replace_all(template.default_subject,objs),replace_all(template.text,objs)
+    subject,body = fill_in_template(template.default_subject,objs),fill_in_template(template.text,objs)
     return [subject,body]
 

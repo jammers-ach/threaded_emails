@@ -1,0 +1,40 @@
+{%extends 'base.html'%}
+{%load staticfiles%}
+
+{%block extra_head%}
+{{email_form.media}}
+<link href="{%static 'threaded_emails/css/threaded_emails.css'%}" rel="stylesheet">
+<script src='{%static 'threaded_emails/js/threaded_emails.js'%}'></script>
+{%endblock%}
+
+{%block content%}
+
+<h1>{{msg.subject}}</h1>
+
+<table>
+    <tr><td>From:</td><td>{{msg.from_addr}}</td></tr>
+    <tr><td>To:</td><td>{{msg.to_addr}}</td></tr>
+    <tr><td>Sent on:</td><td>{{msg.time_sent}}</td></tr>
+</table>
+
+<br/>
+<br/>
+<div class='email_body'>
+    {%include 'threaded_emails/includes/msg_body.html'%} 
+</div>
+
+</table>
+
+<h2>Reply</h2>
+<div class='reply_form'>
+    <form method='post' role="form" class="form-horizontal">
+        {%csrf_token%}
+        {{email_form.as_bootstrap}}
+        <div class='form-group'>
+        <button class="btn btn-default" ><span class="glyphicon glyphicon-share-alt"></span> Send</button>
+        </div>
+    </form>
+</div>
+
+
+{%endblock%}
