@@ -61,6 +61,7 @@ class ImapConnection(object):
         self.imap_server.logout()
 
 
+import cStringIO as StringIO
 
 
 def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
@@ -79,9 +80,10 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
             fil = open(f, "rb")
             fname = basename(f)
         else:
-            fil = f[0]
+            fil = open(f[0],"rb")
             fname = f[1]
         print 'attaching %s' % fname
+
         attachment = MIMEApplication(fil.read())
         attachment.add_header("Content-Disposition", "attachment", filename=fname)
         msg.attach(attachment)
