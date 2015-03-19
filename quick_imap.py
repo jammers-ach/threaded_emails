@@ -75,7 +75,7 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
 
 
     for f in files or []:
-        if(isinstance(f, str)):
+        if(isinstance(f, basestring)):
             fil = open(f, "rb")
             fname = basename(f)
         else:

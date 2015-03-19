@@ -90,6 +90,8 @@ class MailBox(ModelWithLog):
         from checker import new_email
         new_email.send(sender=e.__class__,email=e)
 
+        return e
+
 
     def root_emails(self):
         q = EmailMessage.objects.filter(mailbox=self).filter(reply_to__isnull=True).order_by('-time_sent')
