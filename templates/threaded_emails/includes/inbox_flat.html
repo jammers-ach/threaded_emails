@@ -13,7 +13,8 @@
         <tbody>
         {%for email in emails%}
         <tr data-emailid='{{email.id}}'>
-                <td><span class="glyphicon {%if test_email == email.stripped_to%}glyphicon-arrow-right{%elif test_email == email.stripped_from%}glyphicon-download-alt{%endif%}" aria-hidden="true"></span></td>
+                
+            <td>{%if perms.emailmessage.can_delete%}<a href='{%url 'emails:delete_email' email.id%}{%if request.path%}r={{request.path}}{%endif%}'>x</a> &nbsp;{%endif%}<span class="glyphicon {%if test_email == email.stripped_to%}glyphicon-arrow-right{%elif test_email == email.stripped_from%}glyphicon-download-alt{%endif%}" aria-hidden="true"></span></td>
                 <td class='to'>{{email.stripped_to}}</td>
                 <Td>{{email.stripped_from}}</td>
                 <td>

@@ -95,6 +95,14 @@ def full_email(request,msg_id):
 
     return render(request,'threaded_emails/includes/msg_body.html',{'msg':msg})
 
+@login_required
+def delete_email(request,msg_id):
+    msg = EmailMessage.objects.get(id=msg_id)
+    msg.delete()
+
+    messages.success(request,'Email deleted')
+
+    return redirect(request.GET.get('r','/'))
 
 def view_flat(request,msg_id):
     msg = EmailMessage.objects.get(id=msg_id)
