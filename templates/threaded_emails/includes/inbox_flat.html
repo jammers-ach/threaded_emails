@@ -12,20 +12,17 @@
         </thead>
         <tbody>
         {%for email in emails%}
-            <tr>
+        <tr data-emailid='{{email.id}}'>
                 <td><span class="glyphicon {%if test_email == email.stripped_to%}glyphicon-arrow-right{%elif test_email == email.stripped_from%}glyphicon-download-alt{%endif%}" aria-hidden="true"></span></td>
-                <td>{{email.stripped_to}}</td>
+                <td class='to'>{{email.stripped_to}}</td>
                 <Td>{{email.stripped_from}}</td>
                 <td>
                     {%if email.hasattachments%}  <span class="glyphicon glyphicon-paperclip"></span>   {%endif%}
-                    <a href='{%url 'emails:view_flat' email.id%}'>{{email.subject}}</a>
+                    <a class='email_link' href='{%url 'emails:view_flat' email.id%}'>{{email.subject}}</a>
                 </td>
                 <td>{{email.time_sent}}</td>
             </tr>
         {%endfor%}
         </tbody>
     </table>
-
-
-
 </div>

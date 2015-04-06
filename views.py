@@ -83,6 +83,16 @@ def send_template(request):
 
 def full_email(request,msg_id):
     msg = EmailMessage.objects.get(id=msg_id)
+
+    if('body' in request.GET):
+        body = request.GET['body']
+        to = request.GET['to']
+        mbox = MailBox.objects.all()[0] #TODO make pick the mailbox more nicely
+
+        subject = msg.get_reply_subject()
+        msg = make_msg(subject,body,to,mbox.from_addr,reply_to=msg.message_id)
+        mbox.send_mail(msg,to)
+
     return render(request,'threaded_emails/includes/msg_body.html',{'msg':msg})
 
 
