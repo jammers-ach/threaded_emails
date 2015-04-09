@@ -347,7 +347,7 @@ class Attachment(ModelWithLog):
             os.makedirs(test_dir)
 
         filepath = os.path.join(test_dir,name)
-        print filepath
+        #print filepath
 
 
         #Figure out the filepath to store this attachment
