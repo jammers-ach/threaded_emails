@@ -204,6 +204,14 @@ class EmailMessage(ModelWithLog):
             e.from_addr = mbox.from_addr
         e.mailbox = mbox
         e.subject = eml['subject']
+
+        if(e.subject.startswith('=?')):
+            print 'unicode header'
+            from email.header import decode_header
+            h = decode_header(e.subject)
+            e.subject = unicode(*h[0])
+
+
         e.time_recived = datetime.datetime.now()
 
         if('Date' in eml):
