@@ -90,6 +90,8 @@ class MailBox(ModelWithLog):
         from checker import new_email
         new_email.send(sender=e.__class__,email=e)
 
+        return e
+
 
     def root_emails(self):
         q = EmailMessage.objects.filter(mailbox=self).filter(reply_to__isnull=True).order_by('-time_sent')
@@ -114,6 +116,32 @@ class EmailMessage(ModelWithLog):
     time_sent = models.DateTimeField()
     read = models.BooleanField(default=False)
 
+
+    def get_reply_subject(self):
+        if(self.subject.lower().startswith('re:')):
+           return self.subject
+        else:
+           return 're: ' + self.subject
+
+
+    def get_root_email(self):
+        '''Goes back up the tree to find the root of this conversation'''
+        if(self.parent):
+            return self.parent.get_root_email()
+        else:
+            return None
+
+
+
+    def get_thread(self,thread=[]):
+        '''finds all the emails in this thread'''
+
+        thread.append(self)
+        if(self.parent):
+            return self.parent.get_thread(thread)
+
+        else:
+            return thread
 
     def stripped_to(self):
         return strip_email(self.to_addr)

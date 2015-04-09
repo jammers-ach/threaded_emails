@@ -6,7 +6,9 @@ def replace(source_text,ob,table):
         if(hasattr(val,'__call__')):
             val = val()
 
-        source_text =  source_text.replace(code,val)
+
+        if(val != None):
+            source_text =  source_text.replace(code,val)
 
     return source_text
 
@@ -20,6 +22,7 @@ def fill_in_template(text,objs):
                 text = replace(text,obj,table)
 
     return text
+
 
 def populate_email(template,objs):
     '''Takes an email template, returns a subject/object mix with the fields filed in'''
