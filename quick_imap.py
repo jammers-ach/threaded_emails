@@ -71,7 +71,7 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
     if(reply_to):
         msg['In-Reply-To'] = reply_to
 
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'plain',_charset='utf-8'))
 
 
     for f in files or []:
