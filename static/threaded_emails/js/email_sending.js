@@ -52,7 +52,7 @@ $(function(e){
         var email_id = $(this).closest('tr').attr('data-emailid');
         var url = '/emails/m'+email_id+'/full';
         var to_addr = $(this).closest('tr').find('.to').html();
-
+        to_addr = $('<div/>').html(to_addr).text();
         load_email(url,to_addr);
     });
 
