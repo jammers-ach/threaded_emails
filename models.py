@@ -10,6 +10,16 @@ import smtplib
 import email
 import time
 import re
+from email.header import decode_header
+
+
+def decode_string(e):
+    if(e.startswith('=?')):
+        print 'unicode header'
+        h = decode_header(e)
+        return unicode(*h[0])
+    else:
+        return unicode(e)
 
 def strip_email(s):
     s = re.sub(r'.*<','',s)
@@ -78,7 +88,7 @@ class MailBox(ModelWithLog):
         s.starttls()
         msg['Message-Id'] = email.utils.make_msgid('mbox-%d' % self.pk)
         print 'Message id:',msg['Message-Id']
-        s.login(self.account,self.password)
+        s.login(str(self.account),str(self.password))
         s.ehlo()
         msg['from'] = self.from_addr
 
@@ -196,20 +206,15 @@ class EmailMessage(ModelWithLog):
 
         print 'In reply to: %s' % eml['In-Reply-To']
         e = klass()
-        e.message_id = eml['message-id']
-        e.to_addr = eml['to']
+        e.message_id = unicode(eml['message-id'])
+        e.to_addr = decode_string(eml['to'])
         if(eml['from'] != None):
-            e.from_addr = eml['from']
+            e.from_addr = decode_string(eml['from'])
         else:
             e.from_addr = mbox.from_addr
         e.mailbox = mbox
-        e.subject = eml['subject']
+        e.subject = decode_string(eml['subject'])
 
-        if(e.subject.startswith('=?')):
-            print 'unicode header'
-            from email.header import decode_header
-            h = decode_header(e.subject)
-            e.subject = unicode(*h[0])
 
 
         e.time_recived = datetime.datetime.now()
@@ -245,8 +250,8 @@ class EmailMessage(ModelWithLog):
 
     def parse_body(self,eml):
         ''' Parses an email body and sotres the body and html into the two parts'''
-        self.body = ''
-        self.body_html = ''
+        self.body = u''
+        self.body_html = u''
         if eml.is_multipart():
             for payload in eml.get_payload():
                 self.handle_payload(payload)
@@ -254,15 +259,18 @@ class EmailMessage(ModelWithLog):
             payload = eml.get_payload()
             self.handle_payload(payload)
 
+
     def handle_payload(self,payload):
         ''' Figures out which part of an email this should go'''
         #If we're text attach us to the messages
+        if(isinstance(payload,basestring) ):
+            self.body += payload
+            return
         if(payload.get_content_maintype() == 'text'):
             if(payload.get_content_subtype() == 'plain'):
-                self.body += payload.get_payload(decode=True)
+                self.body += decode_payload(payload)
             elif(payload.get_content_subtype() == 'html'):
-                #self.body_html += decodeHtmlEmail(payload.get_payload())
-                self.body_html += payload.get_payload(decode=True)
+                self.body_html += decode_payload(payload)
             else:
                 Attachment.from_payload(payload,self).save()
 
@@ -277,6 +285,14 @@ class EmailMessage(ModelWithLog):
                 Attachment.from_payload(payload,self).save()
             else:
                 print 'Unrecognised payload',payload.get_content_type()
+
+
+def decode_payload(payload):
+    p = payload.get_payload(decode=True)
+    try:
+        return unicode(p)
+    except UnicodeDecodeError,e:
+        return p.decode(payload.get_charsets()[0])
 
 class EmailTemplateCategory(ModelWithLog):
     '''A helpful way of organising email templates'''
@@ -322,7 +338,7 @@ class Attachment(ModelWithLog):
         a = klass()
         a.email = email
 
-        name = payload.get_filename()
+        name = decode_string(payload.get_filename())
         a.filename = name
 
 

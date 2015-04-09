@@ -19,6 +19,7 @@ class ImapConnection(object):
         '''Gets the content of each email from a list of ids'''
         data = []
         for e_id in email_ids:
+            print 'email_id',e_id
             _, response = self.imap_server.fetch(e_id, '(RFC822)')
             msg = email.message_from_string(response[0][1])
             data.append(msg)
@@ -49,10 +50,10 @@ class ImapConnection(object):
         self.imap_server.select(readonly=1) # Select inbox or default namespace
 
         if(date == None):
-            date = datetime.date.today() - datetime.timedelta(days=1)
-
-        retcode,messages = self.imap_server.search(None, '(SINCE "%s")' % date.strftime('%d-%b-%y'))
-
+            date = datetime.date.today() #- datetime.timedelta(days=1)
+        dstring = date.strftime('%d-%b-%Y')
+        print dstring
+        retcode,messages = self.imap_server.search(None, '(SINCE "%s")' % dstring)
         #if(clear_read and len(messages[0]) > 0):
             #self.imap_server.store(messages[0].replace(' ',','),'+FLAGS','\Seen')
 
