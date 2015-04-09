@@ -4,7 +4,7 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.mime.application import MIMEApplication
 from os.path import basename
-
+import datetime
 
 class ImapConnection(object):
     '''Connects to an IMAP server
@@ -45,12 +45,16 @@ class ImapConnection(object):
     def _search(self,where,what):
         return self.imap_server.search(where,what)
 
-    def get_unread_emails(self,clear_read=False):
+    def get_unread_emails(self,clear_read=False,date=None):
         self.imap_server.select(readonly=1) # Select inbox or default namespace
-        retcode,messages = self.imap_server.search(None, '(UNSEEN)')
 
-        if(clear_read and len(messages[0]) > 0):
-            self.imap_server.store(messages[0].replace(' ',','),'+FLAGS','\Seen')
+        if(date == None):
+            date = datetime.date.today() - datetime.timedelta(days=1)
+
+        retcode,messages = self.imap_server.search(None, '(SINCE "%s")' % date.strftime('%d-%b-%y'))
+
+        #if(clear_read and len(messages[0]) > 0):
+            #self.imap_server.store(messages[0].replace(' ',','),'+FLAGS','\Seen')
 
         return messages[0].split()
 
