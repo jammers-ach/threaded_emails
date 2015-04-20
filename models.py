@@ -14,7 +14,7 @@ from email.header import decode_header
 
 
 def decode_string(e):
-    if(e.startswith('=?')):
+    if(e and e.startswith('=?')):
         print 'unicode header'
         h = decode_header(e)
         return unicode(*h[0])
