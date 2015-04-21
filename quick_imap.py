@@ -79,6 +79,7 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
 
     msg.attach(MIMEText(body, 'plain',_charset='utf-8'))
 
+    msg['Content-Type'] = 'text/plain;charset=utf-8;format="flowed"'
 
     for f in files or []:
         if(isinstance(f, basestring)):
@@ -96,5 +97,7 @@ def make_msg(subject,body,toaddr,fromaddr,reply_to=None,files=[]):
             #fil.read(),
             #Content_Disposition='attachment; filename="%s"' % basename(f)
         #))
+
+
 
     return msg

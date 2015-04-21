@@ -12,12 +12,19 @@ import time
 import re
 from email.header import decode_header
 
+import logging
+logger = logging.getLogger(__name__)
 
 def decode_string(e):
     if(e and e.startswith('=?')):
         print 'unicode header'
         h = decode_header(e)
-        return unicode(*h[0])
+        try:
+            return unicode(*h[0])
+        except Exception:
+            logger.error('Couldn\'t decode %s' % e)
+            return e
+
     else:
         return unicode(e)
 
@@ -75,6 +82,15 @@ class MailBox(ModelWithLog):
         return self.conn.get_emails(email_list)
 
 
+    def make_msgid(self):
+        s = email.utils.make_msgid('mbox-%d' % self.pk)
+        a = s.split('@')[0]
+        b = self.from_addr.split('@')[1]
+        #b = 'bcgp28.nicmail.ru'
+        s = a + '@' + b + '>'
+        return s
+
+
     def logout(self):
         self.conn.logout()
 
@@ -82,19 +98,17 @@ class MailBox(ModelWithLog):
         '''sends a MIMEText message (msg)'''
         print 'Creating STMP'
         s = smtplib.SMTP(self.smtp_address,self.smtp_port)
-        print 'ehlo'
         s.ehlo()
-        print 'start ttls'
         s.starttls()
-        msg['Message-Id'] = email.utils.make_msgid('mbox-%d' % self.pk)
-        print 'Message id:',msg['Message-Id']
+        msg['Message-Id'] = self.make_msgid()
         s.login(str(self.account),str(self.password))
         s.ehlo()
-        msg['from'] = self.from_addr
+
+        if('From' not in msg.keys()):
+            msg['From'] = self.from_addr
 
         s.sendmail(self.from_addr, to, msg.as_string())
         s.quit()
-
 
         e = EmailMessage.from_email(msg,self)
         from checker import new_email
