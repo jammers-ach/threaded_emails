@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from checker import check_box
 # Create your views here.
 
+from django.utils.translation import ugettext as _
 def test(request):
     mailboxes = MailBox.objects.all()
     return render(request,'threaded_emails/console.html',{'boxes':mailboxes});
@@ -23,12 +24,15 @@ def all_mail(request,box_id):
     box = MailBox.objects.get(id=box_id)
     return render(request,'threaded_emails/inbox.html',{'box':box})
 
-def check_mail(request,box_id):
+def check_mail(request,box_id,send_to=None):
     box = MailBox.objects.get(id=box_id)
     #Check mail
-    check_box(box)
+    count = check_box(box)
+    messages.success(request,_('%d new messages') % count)
     #reverse
-    return redirect(reverse('emails:mailbox',kwargs={'box_id':box_id}))
+    if not send_to:
+        send_to = reverse('emails:mailbox',kwargs={'box_id':box_id})
+    return redirect(send_to)
 
 def view_thread(request,msg_id):
     msg = EmailMessage.objects.get(id=msg_id)

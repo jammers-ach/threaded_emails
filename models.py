@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 def decode_string(e):
     if(e and e.startswith('=?')):
-        print 'unicode header'
         h = decode_header(e)
         try:
             return unicode(*h[0])
