@@ -277,7 +277,10 @@ class EmailMessage(ModelWithLog):
         ''' Figures out which part of an email this should go'''
         #If we're text attach us to the messages
         if(isinstance(payload,basestring) ):
-            self.body += payload
+            try:
+                self.body += payload
+            except UnicodeDecodeError,e:
+                self.body += unicode(payload,'cp1251')
             return
         if(payload.get_content_maintype() == 'text'):
             if(payload.get_content_subtype() == 'plain'):
