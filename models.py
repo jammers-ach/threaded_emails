@@ -27,6 +27,30 @@ def decode_string(e):
     else:
         return unicode(e)
 
+
+def decode_email(e):
+    '''e.g. "=?windows-1251?B?xOXt6PE=?=" <email@newinfo-kurs.ru>'''
+    if(e.startswith('"=?')):
+        try:
+            name = re.findall('\".*\"', e)[0].replace('\"','')
+            name = decode_header(name)
+            name = unicode(*name[0])
+            email = strip_email(e)
+            return name + ' <' + email + '>'
+        except Exception:
+            #Just give up if we can't get that out
+            pass
+    elif(e.find('\r\n') != -1 or e.startswith('=?')):
+        name = e.split()[0]
+        name = decode_header(name)
+        name = unicode(*name[0])
+        email = strip_email(e)
+        return name + ' <' + email + '>'
+
+
+    return decode_string(e)
+
+
 def strip_email(s):
     s = re.sub(r'.*<','',s)
     s = re.sub(r'>.*','',s)
@@ -50,7 +74,7 @@ class MailBox(ModelWithLog):
 
     clear_on_read = models.BooleanField(default=False)
 
-    #To add:
+    #To add:y
     #check_type - what do we read only, or read and clear the read flag
     #check_frequency - how often do we read (max 1 every 5 minutes)
     #autocheck - automatically check this or not (requires cronscripts!!)
@@ -220,9 +244,9 @@ class EmailMessage(ModelWithLog):
         print 'In reply to: %s' % eml['In-Reply-To']
         e = klass()
         e.message_id = unicode(eml['message-id'])
-        e.to_addr = decode_string(eml['to'])
+        e.to_addr = decode_email(eml['to'])
         if(eml['from'] != None):
-            e.from_addr = decode_string(eml['from'])
+            e.from_addr = decode_email(eml['from'])
         else:
             e.from_addr = mbox.from_addr
         e.mailbox = mbox
