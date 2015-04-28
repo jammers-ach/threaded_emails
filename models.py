@@ -43,9 +43,17 @@ def decode_email(e):
     elif(e.find('\r\n') != -1 or e.startswith('=?')):
         name = e.split()[0]
         name = decode_header(name)
-        name = unicode(*name[0])
-        email = strip_email(e)
-        return name + ' <' + email + '>'
+        if(name[1] == None):
+            try:
+                e1 = name[0].split()[0]
+                return e1
+            except Exception:
+                return name[0]
+
+        else:
+            name = unicode(*name[0])
+            email = strip_email(e)
+            return name + ' <' + email + '>'
 
 
     return decode_string(e)
