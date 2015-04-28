@@ -51,9 +51,12 @@ def decode_email(e):
                 return name[0]
 
         else:
-            name = unicode(*name[0])
-            email = strip_email(e)
-            return name + ' <' + email + '>'
+            try:
+                name = unicode(*name[0])
+                email = strip_email(e)
+                return name + ' <' + email + '>'
+            except UnicodeDecodeError,e:
+                return strip_email(email)
 
 
     return decode_string(e)
