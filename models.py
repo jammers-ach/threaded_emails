@@ -43,9 +43,9 @@ def decode_email(e):
     elif(e.find('\r\n') != -1 or e.startswith('=?')):
         name = e.split()[0]
         name = decode_header(name)
-        if(name[1] == None):
+        if(name[0][1] == None):
             try:
-                e1 = name[0].split()[0]
+                e1 = name[0][0].split()[0]
                 return e1
             except Exception:
                 return name[0]
