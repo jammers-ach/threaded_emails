@@ -8,7 +8,7 @@ def replace(source_text,ob,table):
 
 
         if(val != None):
-            source_text =  source_text.replace(code,val)
+            source_text =  source_text.replace(code,unicode(val))
 
     return source_text
 

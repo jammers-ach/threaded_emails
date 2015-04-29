@@ -12,8 +12,11 @@ import time
 import re
 from email.header import decode_header
 
+from django.utils.translation import ugettext as _
 import logging
 logger = logging.getLogger(__name__)
+
+help_text = ''
 
 def decode_string(e):
     if(e and e.startswith('=?')):
@@ -344,10 +347,10 @@ class EmailTemplateCategory(ModelWithLog):
 
 class EmailTemplate(ModelWithLog):
     '''An email with placeholders that are replaced later'''
-    template_name = models.CharField(max_length=300)
-    template_category = models.ForeignKey('EmailTemplateCategory')
-    default_subject=  models.CharField(max_length=300)
-    text = models.TextField()
+    template_name = models.CharField(verbose_name=_('Template name'),max_length=300)
+    template_category = models.ForeignKey('EmailTemplateCategory',verbose_name=_('Template category'))
+    default_subject=  models.CharField(max_length=300,verbose_name=_('Subject'))
+    text = models.TextField(verbose_name=_('Email Body'),help_text=help_text)
 
     def __unicode__(self):
         return self.template_name
