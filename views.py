@@ -2,8 +2,8 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse,JsonResponse
 from django.core.urlresolvers import reverse
 
-from .models import MailBox, EmailMessage,EmailTemplate
-from .forms import EmailForm
+from .models import MailBox, EmailMessage,EmailTemplate,EmailTemplateCategory
+from .forms import EmailForm,EmailTemplateCategoryForm,EmailTemplateForm
 from .quick_imap import make_msg
 from .templating import populate_email
 from django.contrib import messages
@@ -13,6 +13,8 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from checker import check_box
 # Create your views here.
+
+from bootstrap_form.views import *
 
 from django.utils.translation import ugettext as _
 def test(request):
@@ -153,3 +155,64 @@ class FillInTemplateView(View):
 
         return JsonResponse({'s':subject,'b':body})
 
+
+
+def list_template(request):
+    categories = EmailTemplateCategory.objects.all().order_by('category_name')
+
+    settings = {'categories':categories}
+
+    return render(request,'threaded_emails/template_list.html',settings)
+
+
+class AddCategoryView(NewObjView):
+    obj_klass = EmailTemplateCategory
+    form_klass =EmailTemplateCategoryForm
+    redirect_page = 'emails:list_templates'
+
+
+class EditCategoryView(EditObjView):
+    obj_klass = EmailTemplateCategory
+    form_klass =EmailTemplateCategoryForm
+    redirect_page = 'emails:list_templates'
+
+class AddTemplateView(NewObjView):
+    obj_klass = EmailTemplate
+    form_klass = EmailTemplateForm
+    redirect_page = 'emails:list_templates'
+
+    def get(self,request,obj_id):
+        c = EmailTemplateCategory.objects.get(id=obj_id)
+        form = self.form_klass(initial={'template_category':c})
+        settings = {'f':form}
+        settings.update(self.get_extra_settings())
+        settings.update(self._settings_ovr)
+        if('ajax' in request.GET and request.GET['ajax'] == 'true'):
+            return render(request,self.ajax_template,settings)
+        else:
+            return render(request,self.template,settings)
+
+
+    def post(self,request,obj_id):
+        return super(AddTemplateView,self).post(request)
+
+class EditTemplateView(EditObjView):
+    obj_klass = EmailTemplate
+    form_klass = EmailTemplateForm
+    redirect_page = 'emails:list_templates'
+    template = 'threaded_emails/edit_template.html'
+
+
+    def get_extra_settings(self):
+        '''Extra settings common to every view'''
+        if(self.obj_name == None):
+            self.obj_name = self.obj_klass.__name__
+
+        return {'obj_name':self.obj_name,
+                'template_objs':[],
+                }
+
+
+
+def get_codes_for_obj(request):
+    pass

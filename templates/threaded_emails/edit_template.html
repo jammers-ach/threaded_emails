@@ -1,0 +1,45 @@
+
+{%extends 'base.html'%}
+{%load staticfiles i18n%}
+
+{%block extra_head%}
+{{f.media}}
+
+<script>
+
+</script>
+{%endblock%}
+
+{%block content%}
+<h1>{%if edit%}Edit{%else%}New{%endif%} - {{obj_name}}</h1>
+
+<div class='container'>
+
+    <div class="col-md-8">
+    <form role="form" method="POST" class="form-horizontal" >
+        {%csrf_token%}
+        {{f.as_bootstrap}}
+        <div class="form-group">
+            <button class="btn btn-default" ><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+        </div>
+    </form>
+</div>
+<div class='col-md-4'>
+    {%if edit%}
+    {%with f.instance as object%}
+    {%if delete_url%}
+    <a href="{{delete_url}}" class="btn btn-default btn-md" role="button">
+        <span class="glyphicon glyphicon-remove"></span> {%trans 'Delete'%}
+    </a><br/>
+    {%endif%}
+    {%include 'modelwithlog/object_stamps.html'%}
+    {%endwith%}
+    {%endif%}
+    <h3>{%trans 'Template codes'%}</h3>
+</div>
+
+</div>
+{%endblock%}
+
+
+

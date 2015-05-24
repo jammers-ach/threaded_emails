@@ -33,6 +33,8 @@ def decode_string(e):
 
 def decode_email(e):
     '''e.g. "=?windows-1251?B?xOXt6PE=?=" <email@newinfo-kurs.ru>'''
+    if(e == None):
+        return ''
     if(e.startswith('"=?')):
         try:
             name = re.findall('\".*\"', e)[0].replace('\"','')
@@ -352,6 +354,9 @@ class EmailTemplateCategory(ModelWithLog):
     '''A helpful way of organising email templates'''
     category_name = models.CharField(max_length=300)
 
+
+    def templates(self):
+        return self.emailtemplate_set.all()
 
     def __unicode__(self):
         return self.category_name

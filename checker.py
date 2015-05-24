@@ -1,7 +1,7 @@
 '''Checks emails'''
 from models import MailBox,EmailMessage
 import django.dispatch
-
+import logging
 new_email = django.dispatch.Signal(providing_args=["email"])
 
 def check_all_mailboxes():
@@ -14,7 +14,12 @@ def check_box(mb):
     new_emails = 0
     emails = mb.download_emails(emails)
     for email in emails:
-        e = EmailMessage.from_email(email,mb)
+        try:
+            e = EmailMessage.from_email(email,mb)
+        except Exception,exp:
+            logging.exception(exp)
+            e = None
+
         #Todo, check if message exists before sending signal..
         if(e != None):
             new_emails += 1
