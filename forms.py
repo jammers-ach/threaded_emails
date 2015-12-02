@@ -13,8 +13,10 @@ class EmailForm(BootstrapForm):
 class EmailTemplateCategoryForm(BootstrapModelForm):
     class Meta:
         model = EmailTemplateCategory
+        exclude = []
 
 
 class EmailTemplateForm(BootstrapModelForm):
     class Meta:
         model = EmailTemplate
+        exclude =[]
